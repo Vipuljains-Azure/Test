@@ -1,0 +1,153 @@
+{
+	"name": "CloudStreaming_copy",
+	"properties": {
+		"description": "Copy the data from the sql server",
+		"activities": [
+			{
+				"name": "ForEach_b19",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.cw_items",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy_b19",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Source",
+									"value": "dbo.@{item().source.table}"
+								},
+								{
+									"name": "Destination",
+									"value": "southridge//@{item().destination.fileName}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"additionalColumns": {
+										"type": "Expression",
+										"value": "@item().copySource.additionalColumns"
+									},
+									"queryTimeout": {
+										"value": "@item().copySource.queryTimeout",
+										"type": "Expression"
+									},
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"validateDataConsistency": true,
+								"logSettings": {
+									"enableCopyActivityLog": true,
+									"copyActivityLogSettings": {
+										"logLevel": "Warning",
+										"enableReliableLogging": false
+									},
+									"logLocationSettings": {
+										"linkedServiceName": {
+											"referenceName": "southridgeadls",
+											"type": "LinkedServiceReference"
+										}
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Source_CloudStreaming",
+									"type": "DatasetReference",
+									"parameters": {
+										"cw_table": "@item().source.table"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Destination_CloudSales_copy1",
+									"type": "DatasetReference",
+									"parameters": {
+										"cw_fileName": "@item().destination.fileName"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"cw_items": {
+				"type": "Array",
+				"defaultValue": [
+					{
+						"source": {
+							"table": "Addresses"
+						},
+						"destination": {
+							"fileName": "Addresses.txt"
+						},
+						"copySource": {
+							"additionalColumns": [
+								{
+									"name": "ELTUpdatedOn",
+									"value": ""
+								}
+							],
+							"queryTimeout": "00:05:00"
+						}
+					},
+					{
+						"source": {
+							"table": "Customers"
+						},
+						"destination": {
+							"fileName": "Customers.txt"
+						},
+						"copySource": {
+							"additionalColumns": null,
+							"queryTimeout": null
+						}
+					},
+					{
+						"source": {
+							"table": "Transactions"
+						},
+						"destination": {
+							"fileName": "OrderDetails.txt"
+						},
+						"copySource": {
+							"additionalColumns": null,
+							"queryTimeout": null
+						}
+					}
+				]
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2020-12-08T09:53:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,6 @@
+{
+	"name": "SelfhostedOnFile",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
